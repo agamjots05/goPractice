@@ -1,43 +1,19 @@
 package main
 
-import(
+import (
 	"fmt"
-	"strconv"
 	"bufio"
-	"os"
 	"strings"
-	//	"time"
+	"os"
+	"strconv"
 )
 
-func main(){
-	var userNumChoice int
-	fmt.Println("Welcome to the Weather Terminal \n What would you like to do")
-	fmt.Println("1. Find the current weather for a specific area?")
-	fmt.Println("2. Learn about new areas around the world to find the weather")
-
-	for {
-		fmt.Print("Input a number: ")
-		n, err := fmt.Scan(&userNumChoice)
-		if err != nil || n != 1{
-			fmt.Println("Invalid Input Type")
-			continue
-		}
-		switch userNumChoice {
-		case 1:
-			findWeather()
-			return
-		case 2:
-			learnNewAreas()
-			return
-		default:
-			fmt.Println("Invalid Number. Try again")
-		}
-	}
-}
 func findWeather(){
 	fmt.Println("Finding Weather...")
 	fmt.Print("Which location would you like to find the weather for?")
 	reader := bufio.NewReader(os.Stdin)
+	var geoCodingEndpoint = "https://geocoding-api.open-meteo.com/v1/search?name=%L"
+
 
 	var location string
 	for {
@@ -54,8 +30,8 @@ func findWeather(){
 		if _, err := strconv.Atoi(location); err == nil{
 			fmt.Println("Please enter non-numeric location")
 			continue
-			
 		}
+			
 		fmt.Println(location)
 	//	n, err := fmt.Scan(&location)
 	//	if n != 1 || err != nil {
@@ -75,7 +51,3 @@ func findWeather(){
 
 }
 
-func learnNewAreas(){
-	fmt.Println("Learning New Areas...")
-
-}
