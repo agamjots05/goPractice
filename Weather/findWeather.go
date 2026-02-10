@@ -6,13 +6,13 @@ import (
 	"strings"
 	"os"
 	"strconv"
+	"net/http"
+	"net/url"
 )
 
 func findWeather(){
-	fmt.Println("Finding Weather...")
-	fmt.Print("Which location would you like to find the weather for?")
+	fmt.Print("Which location would you like to find the weather for? ")
 	reader := bufio.NewReader(os.Stdin)
-	var geoCodingEndpoint = "https://geocoding-api.open-meteo.com/v1/search?name=%L"
 
 
 	var location string
@@ -31,6 +31,17 @@ func findWeather(){
 			fmt.Println("Please enter non-numeric location")
 			continue
 		}
+
+		// This will transform the spaces into "%20" e.g. "san jose" --> "san%20jose"
+		escapedLocation := url.QueryEscape(location)
+
+		urlLocation := fmt.Sprintf("https://geocoding-api.open-meteo.com/v1/search?name=%s&count=1", escapedLocation)
+		resp, err := http.Get(urlLocation)
+		if err != nil{
+			fmt.Println("Error While Requesting Location. \n Please Try Again")
+		}
+		fmt.Println("Response: ", resp)
+		
 			
 		fmt.Println(location)
 	//	n, err := fmt.Scan(&location)

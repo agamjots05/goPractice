@@ -38,6 +38,7 @@ func findWeather(){
 	fmt.Println("Finding Weather...")
 	fmt.Print("Which location would you like to find the weather for?")
 	reader := bufio.NewReader(os.Stdin)
+	const WEATHER_API = 
 
 	var location string
 	for {
@@ -54,8 +55,8 @@ func findWeather(){
 		if _, err := strconv.Atoi(location); err == nil{
 			fmt.Println("Please enter non-numeric location")
 			continue
-			
 		}
+			
 		fmt.Println(location)
 	//	n, err := fmt.Scan(&location)
 	//	if n != 1 || err != nil {
