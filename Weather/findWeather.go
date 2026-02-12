@@ -19,9 +19,13 @@ type GeoResponse struct {
 		Longitude float32 `json:"longitude"`
 	}`json:"results"`
 }
-//type WeatherResponse struct {
-//
-//}
+type WeatherResponse struct {
+	Results struct {
+		Temperature float32 `json:"temperature_2m"`
+	} `json:"current"`
+	
+
+}
 
 func findWeather(){
 	reader := bufio.NewReader(os.Stdin)
@@ -49,6 +53,7 @@ func findWeather(){
 
 		urlLocation := fmt.Sprintf("https://geocoding-api.open-meteo.com/v1/search?name=%s&count=1", escapedLocation)
 		resp, err := http.Get(urlLocation)
+		fmt.Println("Finding Latitude and Longitude...")
 		if err != nil{
 			fmt.Println("Error While Requesting Location. \n Please Try Again")
 			continue
@@ -65,7 +70,34 @@ func findWeather(){
 		if err != nil {
 			log.Fatal(err)	
 		}
-		fmt.Println("Unmarshalled Data", geo)
+		if len(geo.Results) == 0{
+			fmt.Println("Invalid Location Please Try Again")
+			continue
+		}
+		lat := geo.Results[0].Latitude
+		lon := geo.Results[0].Longitude
+		fmt.Println("Found Latitude and Longitude")
+
+		urlTemperature := fmt.Sprintf("https://api.open-meteo.com/v1/forecast?latitude=%f&longitude=%f&hourly=temperature_2m&current=temperature_2m&timeformat=unixtime&temperature_unit=fahrenheit", lat, lon)
+		fmt.Println("Finding Final Temperature...")
+		resp, err = http.Get(urlTemperature)
+		if err != nil {
+			log.Fatal(err)
+		}
+		body, err = io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var temp WeatherResponse
+		err = json.Unmarshal(body, &temp)
+		finalTemp := temp.Results.Temperature
+		fmt.Printf("Final Temperature: %f Degrees Farenheit For Location: %s", finalTemp, escapedLocation)
+		
+
+		
+
 		break
 
 	//	n, err := fmt.Scan(&location)
