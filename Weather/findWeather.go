@@ -8,15 +8,27 @@ import (
 	"strconv"
 	"net/http"
 	"net/url"
+	"log"
+	"io"
+	"encoding/json"
 )
+type GeoResponse struct {
+	Results []struct {
+		Name string `json:"name"`
+		Latitude float32 `json:"latitude"`
+		Longitude float32 `json:"longitude"`
+	}`json:"results"`
+}
+//type WeatherResponse struct {
+//
+//}
 
 func findWeather(){
-	fmt.Print("Which location would you like to find the weather for? ")
 	reader := bufio.NewReader(os.Stdin)
-
-
 	var location string
 	for {
+		
+		fmt.Print(" Which location would you like to learn about the weather for?")
 		input, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("An error has occurred. Please try again")
@@ -39,11 +51,23 @@ func findWeather(){
 		resp, err := http.Get(urlLocation)
 		if err != nil{
 			fmt.Println("Error While Requesting Location. \n Please Try Again")
+			continue
 		}
-		fmt.Println("Response: ", resp)
-		
-			
-		fmt.Println(location)
+		body, err := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil{
+			log.Fatal(err)
+			continue
+		}
+		// Convert the body from RAW JSON to a readable format using the 'GeoRespose' we created
+		var geo GeoResponse
+		err = json.Unmarshal(body, &geo)
+		if err != nil {
+			log.Fatal(err)	
+		}
+		fmt.Println("Unmarshalled Data", geo)
+		break
+
 	//	n, err := fmt.Scan(&location)
 	//	if n != 1 || err != nil {
 	//		fmt.Println("Invalid Input Type")
