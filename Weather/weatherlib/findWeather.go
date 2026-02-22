@@ -1,4 +1,4 @@
-package main
+package weatherlib
 
 import (
 	"fmt"
@@ -27,7 +27,7 @@ type WeatherResponse struct {
 
 }
 
-func findWeather(){
+func FindWeather(){
 	reader := bufio.NewReader(os.Stdin)
 	var location string
 	for {
@@ -117,4 +117,3 @@ func findWeather(){
 
 
 }
-
