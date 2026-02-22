@@ -26,27 +26,42 @@ func main(){
 		case 1:
 			scanner := bufio.NewScanner(os.Stdin)
 			fmt.Println("Enter Cities (e.g., London, San Jose, New York")
+
+
 			var wg sync.WaitGroup
 			if scanner.Scan(){
 				input := scanner.Text()
 				cities := strings.Split(input, ",")
 
+				//Concurrent Test
+				fmt.Println("---- Starting Concurrent Test ----")
+				concurrentStart := time.Now()
 				for _, city := range(cities){
 					city = strings.TrimSpace(city)
 					wg.Add(1)
-					start := time.Now()
-					go func(curCity string){
+					go func(c string){
 						defer wg.Done()
-						weatherlib.FindWeather(city)
-						fmt.Printf("Finding Weather for %s took %v \n", city, time.Since(start))
+						weatherlib.FindWeather(c)
 					}(city)
 				}
 				wg.Wait()
+				fmt.Printf("Finding Weather concurrently took %v \n", time.Since(concurrentStart))
 
+				//Sequential/Single Threaded Test
+				fmt.Println("\n ---- Starting Sequential Test ----")
+				sequentialStart := time.Now()
+				for _, city := range(cities){
+					city = strings.TrimSpace(city)
+					weatherlib.FindWeather(city)
+				}
+				fmt.Printf("Finding Weather sequentially took %v \n", time.Since(sequentialStart))
 			}
+
+			
+
 			return
 		case 2:
-//			learnNewAreas()
+			//			learnNewAreas()
 			return
 		default:
 			fmt.Println("Invalid Number. Try again")

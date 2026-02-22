@@ -2,13 +2,8 @@ package weatherlib
 
 import (
 	"fmt"
-	"bufio"
-	"strings"
-	"os"
-	"strconv"
 	"net/http"
 	"net/url"
-	"log"
 	"io"
 	"encoding/json"
 )
@@ -27,27 +22,7 @@ type WeatherResponse struct {
 
 }
 
-func FindWeather(){
-	reader := bufio.NewReader(os.Stdin)
-	var location string
-	for {
-		
-		fmt.Print(" Which location would you like to learn about the weather for?")
-		input, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Println("An error has occurred. Please try again")
-			continue
-		}
-		location = strings.TrimSpace(input)
-		if location == ""{
-			fmt.Println("Location Can't Be Empty")
-			continue
-		}
-		if _, err := strconv.Atoi(location); err == nil{
-			fmt.Println("Please enter non-numeric location")
-			continue
-		}
-
+func FindWeather(location string){
 		// This will transform the spaces into "%20" e.g. "san jose" --> "san%20jose"
 		escapedLocation := url.QueryEscape(location)
 
@@ -55,65 +30,45 @@ func FindWeather(){
 		resp, err := http.Get(urlLocation)
 		fmt.Println("Finding Latitude and Longitude...")
 		if err != nil{
-			fmt.Println("Error While Requesting Location. \n Please Try Again")
-			continue
+			fmt.Println("Error While Requesting ", location)
+			return
 		}
-		body, err := io.ReadAll(resp.Body)
+		body, _ := io.ReadAll(resp.Body)
 		resp.Body.Close()
-		if err != nil{
-			log.Fatal(err)
-			continue
-		}
+
+
 		// Convert the body from RAW JSON to a readable format using the 'GeoRespose' we created
 		var geo GeoResponse
 		err = json.Unmarshal(body, &geo)
 		if err != nil {
-			log.Fatal(err)	
+			fmt.Println("Error Unmarshalling ", location)
+			return
 		}
 		if len(geo.Results) == 0{
-			fmt.Println("Invalid Location Please Try Again")
-			continue
+			fmt.Println("Error finding coordinates for ", location)
+			return
 		}
 		lat := geo.Results[0].Latitude
 		lon := geo.Results[0].Longitude
-		fmt.Println("Found Latitude and Longitude")
 
+
+		//Use lat and lon we found to find the final temp for location
 		urlTemperature := fmt.Sprintf("https://api.open-meteo.com/v1/forecast?latitude=%f&longitude=%f&hourly=temperature_2m&current=temperature_2m&timeformat=unixtime&temperature_unit=fahrenheit", lat, lon)
-		fmt.Println("Finding Final Temperature...")
 		resp, err = http.Get(urlTemperature)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println("Error Getting Temperature for ", location)
+			return
 		}
-		body, err = io.ReadAll(resp.Body)
+		body, _ = io.ReadAll(resp.Body)
 		resp.Body.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
 
 		var temp WeatherResponse
 		err = json.Unmarshal(body, &temp)
+		if err != nil {
+			fmt.Println("Error unmarshalling final temperature for ", location)
+		}
 		finalTemp := temp.Results.Temperature
-		fmt.Printf("Final Temperature: %f Degrees Farenheit For Location: %s", finalTemp, escapedLocation)
-		
-
-		
-
-		break
-
-	//	n, err := fmt.Scan(&location)
-	//	if n != 1 || err != nil {
-	//		fmt.Println("Invalid Input Type")
-	//		continue
-	//	}
-		// Pass the location into the latitude and longitude finder and then pass that information to the weather api using that information
-		//TODO: We need to determine whether the location is invalid somehow..
-		//switch location {
-		//	case 
-		//}
-
-
-	}
-
-
+		fmt.Printf("Final Temperature: %f Degrees Farenheit For Location: %s \n", finalTemp, location)
+		return 
 
 }
